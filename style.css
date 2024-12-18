@@ -80,3 +80,67 @@ body{
     font-size: 28px;
     margin-top: -6px;
 }
+.forecast {
+    margin-top: 30px;
+    text-align: left;
+}
+
+.forecast h3 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.forecast-container {
+    display: flex;
+    justify-content: space-between;
+    overflow-x: auto;
+}
+
+.forecast-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+    width: 80px;
+    flex-shrink: 0;
+}
+
+.forecast-card img {
+    width: 50px;
+    margin: 5px 0;
+}
+
+.forecast-card p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+@media all and (max-width: 500px) {
+    .card{
+        max-width: 400px;
+        padding: 20px;
+    }
+    .weather h1{
+        font-size: 50px;
+    }
+    .weather h2{
+        font-size: 35px;
+    }
+    .search input{
+        height: 45px;
+
+    }
+    .search button{
+        width: 45px;
+        height: 45px;
+        margin-left: -70px;
+    }
+    .search button i{
+        font-size: 15px;
+    }
+}
+@media all and (max-width: 400px){
+    .card{
+        max-width: 350px;
+    }
+}

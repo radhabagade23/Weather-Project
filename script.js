@@ -1,44 +1,81 @@
-const apikey="30908ecd5f5f08d79c73ea875aab27f6";
-const apiUrl="https://api.openweathermap.org/data/2.5/weather?units=metric&q=";
+const apikey = "a1c6d166e7b292bde1ee2e5a94aa0f3d";
+const apiUrlCurrent = "https://api.openweathermap.org/data/2.5/weather?units=metric&q=";
+const apiUrlForecast = "https://api.openweathermap.org/data/2.5/forecast?units=metric&q=";
 
 const searchBox = document.querySelector(".search input");
-const searchBtn = document.querySelector(".search button"); //when people click on the search button it should send the city information in this check weather function.
+const searchBtn = document.querySelector(".search button");
 const weatherIcon = document.querySelector(".weather-icon");
+const forecastContainer = document.querySelector(".forecast-container");
 
-async function checkweather(city) {
-    const response=await fetch(apiUrl + city + `&appid=${apikey}`);
-    var data=await response.json();
-    // console.log(data);
+async function checkWeather(city) {
+    try {
+        // Fetch current weather
+        const response = await fetch(apiUrlCurrent + city + `&appid=${apikey}`);
+        if (!response.ok) throw new Error("City not found");
+        const data = await response.json();
 
-    // Here we update the data city, temp, humidity and wind 
-    document.querySelector(".city").innerHTML= data.name;
-    document.querySelector(".temp").innerHTML= Math.round(data.main.temp) + "°c";//In this I used Math.round function because I don't want the temp in the point. For Degree celsius I use °c this symbol.
-    document.querySelector(".humidity").innerHTML= data.main.humidity + "%";
-    document.querySelector(".wind").innerHTML= data.wind.speed + "km/h";
+        // Update current weather details
+        document.querySelector(".city").innerHTML = `${data.name}`;
+        document.querySelector(".temp").innerHTML = `${Math.round(data.main.temp)}°C`;
+        document.querySelector(".humidity").innerHTML = `${data.main.humidity}%`;
+        document.querySelector(".wind").innerHTML = `${data.wind.speed} km/h`;
 
+        // Update weather icon
+        const condition = data.weather[0].main;
+        updateWeatherIcon(condition);
 
-    // Here we updated the images according to condition
-    if(data.weather[0].main == "Clouds") { //In this data.weather[0].main is used because in the console of web the index of this is 0 after that the main this main give the weather condition
-        weatherIcon.src = "clouds.webp"; //It will update the source file.
+        // Fetch 5-day forecast
+        fetchForecast(city);
+    } catch (error) {
+        alert(error.message);
     }
-    else if(data.weather[0].main == "Clear"){
-        weatherIcon.src = "clear.webp";
-    }
-    else if(data.weather[0].main == "rain"){
-        weatherIcon.src = "rain.webp";
-    }
-    else if(data.weather[0].main == "Drizzle"){
-        weatherIcon.src = "drizzle.webp";
-    }
-    else if(data.weather[0].main == "Mist"){
-        weatherIcon.src = "mist.webp";
-    }
-    else{
-        weatherIcon.src = "notfound.webp"
-    }
-
 }
 
-searchBtn.addEventListener("click", ()=>{
-    checkweather(searchBox.value);//this checkweather function have the city information return in the input feild, so to get the data return in the input feild we will add the searchBox.value so this searchBox.value will give the city name return in the input feild and it will pass the city name in the checkweather function and it eill be added in this API and it will give the information for the perticular city.
-})
+async function fetchForecast(city) {
+    try {
+        const response = await fetch(apiUrlForecast + city + `&appid=${apikey}`);
+        if (!response.ok) throw new Error("Unable to fetch forecast data");
+        const data = await response.json();
+
+        // Clear previous forecast
+        forecastContainer.innerHTML = "";
+
+        // Extract 5-day forecast (one forecast per day at 12:00 PM)
+        const dailyForecasts = data.list.filter((item) => item.dt_txt.includes("12:00:00"));
+        dailyForecasts.forEach((day) => {
+            const date = new Date(day.dt_txt);
+            const dayName = date.toLocaleDateString("en-US", { weekday: "short" });
+            const icon = `https://openweathermap.org/img/wn/${day.weather[0].icon}.png`;
+            const temp = `${Math.round(day.main.temp)}°C`;
+
+            // Create forecast card
+            const forecastCard = document.createElement("div");
+            forecastCard.classList.add("forecast-card");
+            forecastCard.innerHTML = `
+                <p>${dayName}</p>
+                <img src="${icon}" alt="Weather Icon">
+                <p>${temp}</p>
+            `;
+
+            forecastContainer.appendChild(forecastCard);
+        });
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+function updateWeatherIcon(condition) {
+    const conditionIcons = {
+        Clouds: "clouds.webp",
+        Clear: "clear.webp",
+        Rain: "rain.webp",
+        Drizzle: "drizzle.webp",
+        Mist: "mist.webp",
+    };
+    weatherIcon.src = conditionIcons[condition] || "notfound.webp";
+}
+
+searchBtn.addEventListener("click", () => {
+    const city = searchBox.value.trim();
+    if (city) checkWeather(city);
+});
